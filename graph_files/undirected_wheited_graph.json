@@ -1,0 +1,89 @@
+{
+    "type": [
+        "undirected"
+    ],
+    "nodes": [
+        {
+            "name": "A",
+            "value": null
+        },
+        {
+            "name": "B",
+            "value": null
+        },
+        {
+            "name": "C",
+            "value": null
+        },
+        {
+            "name": "D",
+            "value": null
+        },
+        {
+            "name": "E",
+            "value": null
+        }
+    ],
+    "edges": [
+        {
+            "from": "A",
+            "to": "B",
+            "weight": 10.0
+        },
+        {
+            "from": "A",
+            "to": "C",
+            "weight": 5.0
+        },
+        {
+            "from": "B",
+            "to": "A",
+            "weight": 10.0
+        },
+        {
+            "from": "B",
+            "to": "D",
+            "weight": 7.0
+        },
+        {
+            "from": "B",
+            "to": "E",
+            "weight": 6.0
+        },
+        {
+            "from": "B",
+            "to": "C",
+            "weight": 3.0
+        },
+        {
+            "from": "C",
+            "to": "A",
+            "weight": 5.0
+        },
+        {
+            "from": "C",
+            "to": "B",
+            "weight": 3.0
+        },
+        {
+            "from": "D",
+            "to": "B",
+            "weight": 7.0
+        },
+        {
+            "from": "D",
+            "to": "E",
+            "weight": 8.0
+        },
+        {
+            "from": "E",
+            "to": "B",
+            "weight": 6.0
+        },
+        {
+            "from": "E",
+            "to": "D",
+            "weight": 8.0
+        }
+    ]
+}
