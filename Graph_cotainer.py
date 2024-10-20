@@ -1,13 +1,17 @@
 import json
-from collections import defaultdict
+from collections import defaultdict, deque
 from functools import singledispatchmethod
 import os
 import copy
-graph_path = "C:\\RepoProjects\\graphs\\graph_ssu\\graph_files"
+
+graph_path = "P:\\graph\\graph_ssu\\graph_files"
+
+
 class Node:
     def __init__(self, name, value=None):
         self.name = name
         self.value = value
+
 
 class Graph:
     def __init__(self, directed=False, weighted=False):
@@ -15,6 +19,7 @@ class Graph:
         self.weighted = weighted
         self.adjacency_list = defaultdict(set)
         self.node_info = {}
+        self.cycles = []
         if self.weighted:
             self.weights = defaultdict(lambda: float('inf'))
         else:
@@ -29,24 +34,156 @@ class Graph:
         return new_graph
 
     def __str__(self):
-        directed = ", "
+        result = ""
+        directed = ""
         wheighted = ""
         if self.directed:
             directed += "ориентированный"
         if self.weighted:
             wheighted = "взвешенный"
+        if not self.weighted and not self.directed:
+            result += f"Тип графа: простой граф\n"
+        else:
+            result += f"Тип графа: {wheighted, directed}\n"
 
-        result = f"Тип графа: {wheighted, directed}\n"
         for node, neighbors in self.adjacency_list.items():
-            if True:#len(neighbors) != 0:
+            if True:  # len(neighbors) != 0:
                 result += f"{node} -> {', '.join(neighbors)}\n"
         if self.weighted:
             result += "\nВес ребер:\n"
             for (start, end), weight in self.weights.items():
                 result += f"{start} -> {end} : {weight}\n"
+
         return result
 
-    # Добавление узла через класс Node
+    # Задача 3: Метод для вывода степени каждой вершины
+    def print_degrees(self):
+        for node in self.adjacency_list.keys():
+            if self.directed:
+                outgoing = len(self.adjacency_list[node])
+                incoming = len([n for n, neighbors in self.adjacency_list.items() if node in neighbors])
+                print(f"-deg({node}) = {outgoing}")
+                print(f"+deg({node}) = {incoming}")
+                print(f"deg({node}) = {incoming + outgoing}\n")
+            else:
+                print(f"deg({node}) = {len(self.adjacency_list[node])}\n")
+
+    # Задача 13: Метод для поиска вершин, одновременно входящих и исходящих для данной вершины
+    def find_bidirectional_vertices(self, node):
+        if node not in self.adjacency_list:
+            raise ValueError(f"Вершина {node} не найдена в графе")
+
+        outgoing_vertices = self.adjacency_list[node]
+        incoming_vertices = {v for v, neighbors in self.adjacency_list.items() if node in neighbors}
+        result = outgoing_vertices & incoming_vertices
+
+        if result:
+            print(f"Вершины, которые одновременно заходят и выходят для {node}: {', '.join(result)}")
+        else:
+            print(f"Для вершины {node} нет одновременно входящих и выходящих вершин.")
+
+    # Задача 18: Метод для удаления вершин с нечётными степенями
+    def remove_odd_degree_vertices(self):
+        new_graph = self.copy()
+        deleted_nodes = []
+
+        print("Исходный граф:")
+        print(self)
+
+        for node in list(new_graph.adjacency_list.keys()):
+            outgoing = len(new_graph.adjacency_list[node])
+            incoming = len([n for n, neighbors in new_graph.adjacency_list.items() if node in neighbors])
+            degree = outgoing + incoming if self.directed else len(new_graph.adjacency_list[node])
+
+            if degree % 2 != 0 and degree != 0:
+                deleted_nodes.append(node)
+
+        for node in deleted_nodes:
+            new_graph.del_node(node)
+
+        print("Граф после удаления вершин с нечётными степенями:")
+        print(new_graph)
+        return new_graph
+
+    def dfs(self, start_node):
+        if start_node not in self.adjacency_list:
+            raise ValueError(f"Вершина {start_node} не найдена в графе")
+
+        visited = set()  # посещенные вершины
+        traversal_order = []  # путь обхода
+
+        def dfs_recursive(node):
+            visited.add(node)
+            traversal_order.append(node)
+
+            for neighbor in self.adjacency_list[node]:
+                if neighbor not in visited:
+                    dfs_recursive(neighbor)
+
+        dfs_recursive(start_node)
+
+        return traversal_order, len(traversal_order)
+
+    def bfs(self, start_node):
+        if start_node not in self.adjacency_list:
+            raise ValueError(f"Вершина {start_node} не найдена в графе")
+
+        visited = set([start_node])  # посещенные вершины
+        queue = deque([start_node])  # очередь
+        traversal_order = []  # пройденный путь
+
+        while queue:
+            node = queue.popleft()
+            traversal_order.append(node)
+
+            for neighbor in self.adjacency_list[node]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+
+        return traversal_order, len(traversal_order)
+
+    # 23 Проверить, можно ли из орграфа удалить какую-либо вершину так, чтобы получилось дерево.
+    def is_tree_after_removal(self):
+        for node in list(self.adjacency_list.keys()):
+            new_graph = self.copy()
+            new_graph.del_node(node)
+
+            if self._is_connected(new_graph) and not self._has_cycle(new_graph):
+                print(f"Граф может стать деревом после удаления вершины: {node}")
+                return True
+
+        print("Невозможно превратить граф в дерево удалением одной вершины.")
+        return False
+
+    def _is_connected(self, graph):
+        if not graph.adjacency_list:
+            return True
+
+        start_node = next(iter(graph.adjacency_list))
+        traversal_order, num_nodes_reached = graph.bfs(start_node)
+
+        return num_nodes_reached == len(graph.adjacency_list)
+
+    def _has_cycle(self, graph):
+        visited = set()
+
+        def dfs_with_cycle_detection(node, parent):
+            visited.add(node)
+            for neighbor in graph.adjacency_list[node]:
+                if neighbor not in visited:
+                    if dfs_with_cycle_detection(neighbor, node):
+                        return True
+                elif neighbor != parent:
+                    return True
+            return False
+
+        for node in graph.adjacency_list:
+            if node not in visited:
+                if dfs_with_cycle_detection(node, None):
+                    return True
+        return False
+
     @singledispatchmethod
     def add_node(self, node: Node):
         if node.name in self.adjacency_list:
@@ -54,6 +191,7 @@ class Graph:
         else:
             self.adjacency_list[node.name] = set()
             self.node_info[node.name] = node.value
+
     # Добавление узла по кортежу (имя, значение)
     @add_node.register
     def _(self, node_info: tuple):
@@ -63,6 +201,7 @@ class Graph:
         else:
             self.adjacency_list[name] = set()
             self.node_info[name] = value
+
     # Добавление узла по имени с значение по умолчанию
     @add_node.register(str)
     def _(self, node_name: str):
@@ -119,10 +258,12 @@ class Graph:
                 self.weights[(first_name, second_name)] = weight
                 if not self.directed:
                     self.weights[(second_name, first_name)] = weight
+
     # Перегрузка добавления через класс Node
     @add_connect.register
     def _(self, first_node: Node, second_node: Node, weight=None):
         self.add_connect((first_node.name, first_node.value), (second_node.name, second_node.value), weight)
+
     # Перегрузка добавления через имя со значениями по умолчанию
     @add_connect.register
     def _(self, first_node_name: str, second_node_name: str, weight=None):
@@ -248,7 +389,17 @@ class Graph:
                 print("Доступные файлы в текущей директории:")
                 for idx, file in enumerate(files):
                     print(f"{idx + 1}. {file}")
-            file_path = input("Введите путь до файла: ").strip()
+
+            file_selection = input("Введите номер файла или полный путь: ").strip()
+            if file_selection.isdigit():
+                file_idx = int(file_selection) - 1
+                if 0 <= file_idx < len(files):
+                    file_path = files[file_idx]
+                else:
+                    raise ValueError("Неверный номер файла")
+            else:
+                file_path = file_selection
+
             return Graph.load_from_file(file_path)
 
         directed = input("Граф ориентированный? (y/n): ").strip().lower() == 'y'
@@ -286,33 +437,31 @@ class Graph:
             print("7 - Выйти")
             choice = input("Выберите действие: ").strip()
 
-            if choice == '1': # Сохранение графа в файл
+            if choice == '1':  # Сохранение графа в файл
                 file_path = input("Введите имя файла для сохранения (.json): ").strip()
                 self.save_to_file(file_path)
-            elif choice == '2': # Добавление узла
+            elif choice == '2':  # Добавление узла
                 node_name = input("Введите имя узла: ").strip()
                 value = int(input(f"Значение узла {node_name} (по умолчанию None): ") or None)
                 self.add_node((node_name, value))
-            elif choice == '3': # Добавление ребра/дуги
+            elif choice == '3':  # Добавление ребра/дуги
                 first_node = input("Введите первый узел: ").strip()
                 second_node = input("Введите второй узел: ").strip()
                 weight = None
                 if self.weighted:
                     weight = float(input("Вес ребра: "))
                 self.add_connect(first_node, second_node, weight)
-            elif choice == '4': # Удаление узла
+            elif choice == '4':  # Удаление узла
                 node_name = input("Введите имя узла для удаления: ").strip()
                 self.del_node(node_name)
-            elif choice == '5': # Удаление ребра/Дуги
+            elif choice == '5':  # Удаление ребра/Дуги
                 first_node_name = input("Введите имя первого узла: ").strip()
                 second_node_name = input("Введите имя второго узла: ").strip()
                 self.del_connect(first_node_name, second_node_name)
-            elif choice == '6': # Вывод информации о графе
+            elif choice == '6':  # Вывод информации о графе
                 print(self)
             elif choice == '7':
                 print("Выход из программы")
                 break
             else:
                 print("Неверный выбор, попробуйте снова")
-
-

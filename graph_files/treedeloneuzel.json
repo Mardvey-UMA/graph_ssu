@@ -1,0 +1,63 @@
+{
+  "type": [
+    "directed"
+  ],
+  "nodes": [
+    {
+      "name": "A",
+      "value": null
+    },
+    {
+      "name": "B",
+      "value": null
+    },
+    {
+      "name": "C",
+      "value": null
+    },
+    {
+      "name": "D",
+      "value": null
+    },
+    {
+      "name": "E",
+      "value": null
+    },
+    {
+      "name": "T",
+      "value": null
+    }
+  ],
+  "edges": [
+    {
+      "from": "A",
+      "to": "C",
+      "weight": null
+    },
+    {
+      "from": "C",
+      "to": "D",
+      "weight": null
+    },
+    {
+      "from": "D",
+      "to": "T",
+      "weight": null
+    },
+    {
+      "from": "T",
+      "to": "E",
+      "weight": null
+    },
+    {
+      "from": "E",
+      "to": "B",
+      "weight": null
+    },
+    {
+      "from": "B",
+      "to": "A",
+      "weight": null
+    }
+  ]
+}
