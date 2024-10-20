@@ -3,7 +3,7 @@ from collections import defaultdict
 from functools import singledispatchmethod
 import os
 import copy
-graph_path = "P:\\LabGit\\graph_project\\graph_files"
+graph_path = "C:\\RepoProjects\\graphs\\graph_ssu\\graph_files"
 class Node:
     def __init__(self, name, value=None):
         self.name = name
@@ -20,7 +20,7 @@ class Graph:
         else:
             self.weights = None
 
-    def __copy__(self):
+    def copy(self):
         new_graph = Graph(directed=self.directed, weighted=self.weighted)
         new_graph.adjacency_list = copy.deepcopy(self.adjacency_list)
         new_graph.node_info = copy.deepcopy(self.node_info)
@@ -29,7 +29,14 @@ class Graph:
         return new_graph
 
     def __str__(self):
-        result = ""
+        directed = ", "
+        wheighted = ""
+        if self.directed:
+            directed += "ориентированный"
+        if self.weighted:
+            wheighted = "взвешенный"
+
+        result = f"Тип графа: {wheighted, directed}\n"
         for node, neighbors in self.adjacency_list.items():
             if True:#len(neighbors) != 0:
                 result += f"{node} -> {', '.join(neighbors)}\n"
@@ -177,7 +184,7 @@ class Graph:
                 for t in temp:
                     self.weights.pop(t)
         else:
-            print(f'Ключ {name} не найден')
+            print(f'Узел {name} не найден')
 
     # Удаление ребра/дуги по имени
     def del_connect(self, name1: str, name2: str):

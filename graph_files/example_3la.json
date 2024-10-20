@@ -42,11 +42,6 @@
     },
     {
       "from": "C",
-      "to": "B",
-      "weight": null
-    },
-    {
-      "from": "C",
       "to": "D",
       "weight": null
     },

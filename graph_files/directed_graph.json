@@ -1,59 +1,64 @@
 {
-    "type": [
-        "directed"
-    ],
-    "nodes": [
-        {
-            "name": "A",
-            "value": null
-        },
-        {
-            "name": "B",
-            "value": null
-        },
-        {
-            "name": "C",
-            "value": null
-        },
-        {
-            "name": "D",
-            "value": null
-        },
-        {
-            "name": "E",
-            "value": null
-        }
-    ],
-    "edges": [
-        {
-            "from": "A",
-            "to": "C",
-            "weight": null
-        },
-        {
-            "from": "A",
-            "to": "B",
-            "weight": null
-        },
-        {
-            "from": "C",
-            "to": "B",
-            "weight": null
-        },
-        {
-            "from": "D",
-            "to": "B",
-            "weight": null
-        },
-        {
-            "from": "E",
-            "to": "B",
-            "weight": null
-        },
-        {
-            "from": "E",
-            "to": "D",
-            "weight": null
-        }
-    ]
+  "type": [
+    "directed"
+  ],
+  "nodes": [
+    {
+      "name": "A",
+      "value": null
+    },
+    {
+      "name": "B",
+      "value": null
+    },
+    {
+      "name": "C",
+      "value": null
+    },
+    {
+      "name": "D",
+      "value": null
+    },
+    {
+      "name": "E",
+      "value": null
+    }
+  ],
+  "edges": [
+    {
+      "from": "A",
+      "to": "C",
+      "weight": null
+    },
+    {
+      "from": "A",
+      "to": "E",
+      "weight": null
+    },
+    {
+      "from": "A",
+      "to": "B",
+      "weight": null
+    },
+    {
+      "from": "C",
+      "to": "B",
+      "weight": null
+    },
+    {
+      "from": "D",
+      "to": "B",
+      "weight": null
+    },
+    {
+      "from": "E",
+      "to": "B",
+      "weight": null
+    },
+    {
+      "from": "E",
+      "to": "D",
+      "weight": null
+    }
+  ]
 }
