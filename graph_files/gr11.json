@@ -1,0 +1,18 @@
+{
+  "type": [
+    "directed"
+  ],
+  "nodes": [
+    { "name": "A", "value": null },
+    { "name": "B", "value": null },
+    { "name": "C", "value": null },
+    { "name": "D", "value": null },
+    { "name": "E", "value": null }
+  ],
+  "edges": [
+    { "from": "A", "to": "B", "weight": null },
+    { "from": "A", "to": "C", "weight": null },
+    { "from": "A", "to": "D", "weight": null },
+    { "from": "A", "to": "E", "weight": null }
+  ]
+}

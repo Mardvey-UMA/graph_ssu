@@ -149,14 +149,14 @@ class Graph:
             new_graph = self.copy()
             new_graph.del_node(node)
 
-            if self._is_connected(new_graph) and not self._has_cycle(new_graph):
+            if self.is_connected(new_graph) and not self.is_cycled(new_graph):
                 print(f"Граф может стать деревом после удаления вершины: {node}")
                 return True
 
         print("Невозможно превратить граф в дерево удалением одной вершины.")
         return False
 
-    def _is_connected(self, graph):
+    def is_connected(self, graph):
         if not graph.adjacency_list:
             return True
 
@@ -165,14 +165,14 @@ class Graph:
 
         return num_nodes_reached == len(graph.adjacency_list)
 
-    def _has_cycle(self, graph):
+    def is_cycled(self, graph):
         visited = set()
 
-        def dfs_with_cycle_detection(node, parent):
+        def dfs_cycle(node, parent):
             visited.add(node)
             for neighbor in graph.adjacency_list[node]:
                 if neighbor not in visited:
-                    if dfs_with_cycle_detection(neighbor, node):
+                    if dfs_cycle(neighbor, node):
                         return True
                 elif neighbor != parent:
                     return True
@@ -180,9 +180,39 @@ class Graph:
 
         for node in graph.adjacency_list:
             if node not in visited:
-                if dfs_with_cycle_detection(node, None):
+                if dfs_cycle(node, None):
                     return True
         return False
+
+    def find_shortest_distance(self, target_vertices):
+        distances = {}
+
+        for start_vertex in self.adjacency_list.keys():
+            if start_vertex in target_vertices:
+                distances[start_vertex] = 0
+                continue
+
+            queue = deque([(start_vertex, 0)])
+            visited = set([start_vertex])
+            found = False
+
+            while queue and not found:
+                current_vertex, current_distance = queue.popleft()
+
+                if current_vertex in target_vertices:
+                    distances[start_vertex] = current_distance
+                    found = True
+                    break
+
+                for neighbor in self.adjacency_list[current_vertex]:
+                    if neighbor not in visited:
+                        visited.add(neighbor)
+                        queue.append((neighbor, current_distance + 1))
+
+            if not found:
+                distances[start_vertex] = float('inf')
+
+        return distances
 
     @singledispatchmethod
     def add_node(self, node: Node):
