@@ -122,7 +122,7 @@ class Graph:
 
         dfs_recursive(start_node)
 
-        return traversal_order, len(traversal_order)
+        return traversal_order
 
     def bfs(self, start_node):
         if start_node not in self.adjacency_list:
@@ -141,48 +141,43 @@ class Graph:
                     visited.add(neighbor)
                     queue.append(neighbor)
 
-        return traversal_order, len(traversal_order)
+        return traversal_order
 
-    # 23 Проверить, можно ли из орграфа удалить какую-либо вершину так, чтобы получилось дерево.
-    def is_tree_after_removal(self):
-        for node in list(self.adjacency_list.keys()):
-            new_graph = self.copy()
-            new_graph.del_node(node)
+    def is_tree_after_delete_node(self):
+        flag = False
+        for node in self.adjacency_list.keys():
+            graph_copy = self.copy()
+            graph_copy.del_node(node)
+            snode = list(graph_copy.adjacency_list.keys())
+            snode = snode[0]
+            if graph_copy.is_acycled() and ((len(graph_copy.dfs(snode)) == len(
+                    graph_copy.adjacency_list.keys())) or len(graph_copy.adjacency_list.keys()) == 0):
+                print(f"Надо удалить узел {node}")
+                print(graph_copy)
+                flag = True
+                break
+        if not (flag):
+            print("Невозможно удалить один узел чтобы граф стал деревом")
 
-            if self.is_connected(new_graph) and not self.is_cycled(new_graph):
-                print(f"Граф может стать деревом после удаления вершины: {node}")
-                return True
+    def dfs_three_colors(self, node, color):
+        color[node] = "grey"
+        for to in self.adjacency_list[node]:
+            if color[to] == "white":
+                self.dfs_three_colors(to, color)
+            if color[to] == "grey":
+                return 201
+        color[node] = "black"
 
-        print("Невозможно превратить граф в дерево удалением одной вершины.")
-        return False
+    def is_acycled(self):
+        color = self.adjacency_list.copy()
+        for k in color.keys():
+            color[k] = "white"
 
-    def is_connected(self, graph):
-        if not graph.adjacency_list:
-            return True
-
-        start_node = next(iter(graph.adjacency_list))
-        traversal_order, num_nodes_reached = graph.bfs(start_node)
-
-        return num_nodes_reached == len(graph.adjacency_list)
-
-    def is_cycled(self, graph):
-        visited = set()
-
-        def dfs_cycle(node, parent):
-            visited.add(node)
-            for neighbor in graph.adjacency_list[node]:
-                if neighbor not in visited:
-                    if dfs_cycle(neighbor, node):
-                        return True
-                elif neighbor != parent:
-                    return True
-            return False
-
-        for node in graph.adjacency_list:
-            if node not in visited:
-                if dfs_cycle(node, None):
-                    return True
-        return False
+        for node in self.adjacency_list.keys():
+            res = self.dfs_three_colors(node, color)
+            if res == 201:
+                return False
+        return True
 
     def find_shortest_distance(self, target_vertices):
         distances = {}
@@ -213,6 +208,51 @@ class Graph:
                 distances[start_vertex] = float('inf')
 
         return distances
+    def find_minimal_spanning_tree_kruskal(self):
+        if not self.weighted:
+            print("Граф не взвешенный. Алгоритм Краскала применим только к взвешенным графам.")
+            return None
+
+        mst_edges = []
+        total_weight = 0
+
+        edges = sorted(self.weights.items(), key=lambda x: x[1])
+
+        parent = {node: node for node in self.adjacency_list}
+        rank = {node: 0 for node in self.adjacency_list}
+
+        def find(node):
+            if parent[node] != node:
+                parent[node] = find(parent[node])
+            return parent[node]
+
+        def union(node1, node2):
+            root1 = find(node1)
+            root2 = find(node2)
+            if root1 != root2:
+                if rank[root1] > rank[root2]:
+                    parent[root2] = root1
+                elif rank[root1] < rank[root2]:
+                    parent[root1] = root2
+                else:
+                    parent[root2] = root1
+                    rank[root1] += 1
+
+        for (u, v), weight in edges:
+            if find(u) != find(v):
+                union(u, v)
+                mst_edges.append((u, v, weight))
+                total_weight += weight
+
+                if len(mst_edges) == len(self.adjacency_list) - 1:
+                    break
+
+        print("Минимальный остовный каркас (алгоритм Краскала):")
+        for u, v, weight in mst_edges:
+            print(f"{u} - {v} : {weight}")
+        print(f"Общий вес каркаса: {total_weight}")
+
+        return mst_edges, total_weight
 
     @singledispatchmethod
     def add_node(self, node: Node):
