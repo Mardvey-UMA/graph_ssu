@@ -23,9 +23,24 @@
             "name": "E",
             "value": null
         }
+        ,
+        {
+            "name": "X",
+            "value": null
+        }
+        ,
+        {
+            "name": "Y",
+            "value": null
+        }
     ],
     "edges": [
         {
+            "from": "X",
+            "to": "Y",
+            "weight": 100
+        },
+        {
             "from": "A",
             "to": "B",
             "weight": 10.0
@@ -84,6 +99,11 @@
             "from": "E",
             "to": "D",
             "weight": 8.0
+        },
+        {
+            "from": "C",
+            "to": "E",
+            "weight": 5
         }
     ]
 }
