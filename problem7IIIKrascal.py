@@ -6,4 +6,5 @@ from Graph_cotainer import Graph, graph_path
 import os
 os.chdir(graph_path)
 graph = Graph.console_input()
+print(graph)
 graph.find_minimal_spanning_tree_kruskal()

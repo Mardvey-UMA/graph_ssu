@@ -4,7 +4,7 @@ from functools import singledispatchmethod
 import os
 import copy
 
-graph_path = "P:\\graph\\graph_ssu\\graph_files"
+graph_path = "C:\\RepoProjects\\graphs\\graph_ssu\\graph_files"
 
 
 class Node:
@@ -143,6 +143,7 @@ class Graph:
 
         return traversal_order
 
+    # Задача 23: * Проверить, можно ли из орграфа удалить какую-либо вершину так, чтобы получилось дерево.(метод)
     def is_tree_after_delete_node(self):
         flag = False
         for node in self.adjacency_list.keys():
@@ -158,7 +159,7 @@ class Graph:
                 break
         if not (flag):
             print("Невозможно удалить один узел чтобы граф стал деревом")
-
+    # Обход в глубину тремя цветами для поиска циклов (если цикл найден, вернет 201)
     def dfs_three_colors(self, node, color):
         color[node] = "grey"
         for to in self.adjacency_list[node]:
@@ -168,6 +169,7 @@ class Graph:
                 return 201
         color[node] = "black"
 
+    # Проверка графа на ацикличность
     def is_acycled(self):
         color = self.adjacency_list.copy()
         for k in color.keys():
@@ -178,58 +180,62 @@ class Graph:
             if res == 201:
                 return False
         return True
-
+    # Задача 39: Для каждой вершины найти кратчайшее
+    # (по числу рёбер) расстояние от неё до ближайшей из заданного множества вершин.
     def find_shortest_distance(self, target_vertices):
-        distances = {}
-
+        distances = {} # словарь для хранения ответа
+        # Делаем обход в ширину от каждой вершины чтобы найти кратчайщие пути
         for start_vertex in self.adjacency_list.keys():
-            if start_vertex in target_vertices:
+            if start_vertex in target_vertices: # если вершина совпала с множеством целевых
+                # значит расстояние до нее равно нулю
                 distances[start_vertex] = 0
                 continue
 
-            queue = deque([(start_vertex, 0)])
-            visited = set([start_vertex])
-            found = False
+            queue = deque([(start_vertex, 0)]) # помещаем в очередь текущую вершину
+            visited = set([start_vertex]) # сразу ставим ее как посещенную
+            found = False # нашли целевую вершину или нет
 
             while queue and not found:
-                current_vertex, current_distance = queue.popleft()
+                current_vertex, current_distance = queue.popleft() # достаем из очереди вершину и расстояние
 
-                if current_vertex in target_vertices:
-                    distances[start_vertex] = current_distance
-                    found = True
+                if current_vertex in target_vertices: # если достигнута вершина которая нужна
+                    distances[start_vertex] = current_distance # пишем в словарь ответов
+                    found = True # нашли, больше не надо искать
                     break
 
-                for neighbor in self.adjacency_list[current_vertex]:
+                for neighbor in self.adjacency_list[current_vertex]: # кидаем соседей в очередь
                     if neighbor not in visited:
-                        visited.add(neighbor)
-                        queue.append((neighbor, current_distance + 1))
+                        visited.add(neighbor) 
+                        queue.append((neighbor, current_distance + 1)) # помещаем в очередь с увеличемнием пути на + 1
 
-            if not found:
+            if not found: # если не удалось добраться до вершины => она не достижима
                 distances[start_vertex] = float('inf')
 
         return distances
+    
+    # Задача на поиск минимального каркаса (остновного дерева) в неориентированном графе
     def find_minimal_spanning_tree_kruskal(self):
         if not self.weighted:
             print("Граф не взвешенный. Алгоритм Краскала применим только к взвешенным графам.")
             return None
 
-        mst_edges = []
-        total_weight = 0
+        mst_edges = [] # список ребер составляющий мин остов дерево
+        total_weight = 0 # общий вес дерева 
 
-        edges = sorted(self.weights.items(), key=lambda x: x[1])
+        edges = sorted(self.weights.items(), key=lambda x: x[1]) # сортируем ребра по возрастанию веса
 
-        parent = {node: node for node in self.adjacency_list}
-        rank = {node: 0 for node in self.adjacency_list}
+        parent = {node: node for node in self.adjacency_list} # словарь родителей (изначально каждый узел сам себе предок)
+        rank = {node: 0 for node in self.adjacency_list} # уровень узла (изначально каждый узел корень своего дерева (уровень 0))
 
-        def find(node):
+        def find(node): # метод для поиска корневого предка узла 
             if parent[node] != node:
-                parent[node] = find(parent[node])
+                parent[node] = find(parent[node]) # рекурсивно вызываем 
             return parent[node]
 
-        def union(node1, node2):
-            root1 = find(node1)
-            root2 = find(node2)
-            if root1 != root2:
+        def union(node1, node2): # метод для объединения двух поддеревьев
+            root1 = find(node1) # ищем предка первого узла
+            root2 = find(node2) # ищем предка второго узла
+            if root1 != root2: # если предки не совпали сравниванием уровень чтобы сохранить баланс
                 if rank[root1] > rank[root2]:
                     parent[root2] = root1
                 elif rank[root1] < rank[root2]:
@@ -238,16 +244,17 @@ class Graph:
                     parent[root2] = root1
                     rank[root1] += 1
 
-        for (u, v), weight in edges:
-            if find(u) != find(v):
-                union(u, v)
-                mst_edges.append((u, v, weight))
-                total_weight += weight
+        for (u, v), weight in edges: # идем по всем ребрам в порядке возрастания весов 
+            if find(u) != find(v): # если у узлов не один и тот же предок, то есть нет цикла
+                union(u, v) # объединяем их в поддерево
+                mst_edges.append((u, v, weight)) # добавляем в результат
+                total_weight += weight # добавляем весь вес дерева
 
-                if len(mst_edges) == len(self.adjacency_list) - 1:
+                if len(mst_edges) == len(self.adjacency_list) - 1: # если добавлены все узлы (значит ребер n - 1)
+                    # можно закончить цикл
                     break
 
-        print("Минимальный остовный каркас (алгоритм Краскала):")
+        print("Минимальный остовный каркас:")
         for u, v, weight in mst_edges:
             print(f"{u} - {v} : {weight}")
         print(f"Общий вес каркаса: {total_weight}")
