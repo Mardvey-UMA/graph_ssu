@@ -1,0 +1,15 @@
+{
+  "type": ["undirected"],
+  "nodes": [
+    { "name": "A", "value": null },
+    { "name": "B", "value": null },
+    { "name": "C", "value": null },
+    { "name": "D", "value": null }
+  ],
+  "edges": [
+    { "from": "A", "to": "B", "weight": null },
+    { "from": "A", "to": "C", "weight": null },
+    { "from": "B", "to": "C", "weight": null },
+    { "from": "B", "to": "D", "weight": null }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "type": ["directed"],
+  "nodes": [
+    { "name": "A", "value": null },
+    { "name": "A1", "value": null },
+    { "name": "B", "value": null },
+    { "name": "C", "value": null },
+    { "name": "D", "value": null },
+    { "name": "E", "value": null },
+    { "name": "F", "value": null },
+    { "name": "G", "value": null }
+  ],
+  "edges": [
+    { "from": "A", "to": "A1", "weight": 1 },
+    { "from": "A1", "to": "B", "weight": 1 },
+    { "from": "A", "to": "C", "weight": 1 },
+    { "from": "C", "to": "D", "weight": 2 },
+    { "from": "F", "to": "G", "weight": 2 }
+  ]
+}

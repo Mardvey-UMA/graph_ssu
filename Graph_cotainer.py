@@ -258,6 +258,95 @@ class Graph:
         print(f"Общий вес каркаса: {total_weight}")
 
         return mst_edges, total_weight
+    # Задача 21
+    def floyd(self):
+        if not(self.weighted):
+            raise TypeError("Нужен взвешенный граф")
+        nodes = list(self.adjacency_list.keys())
+        distances = {node: {other: float('inf') for other in nodes} for node in nodes}
+        p = {node: {other: [] for other in nodes} for node in nodes}
+
+        for node in nodes:
+            distances[node][node] = 0
+            for neighbor in self.adjacency_list[node]:
+                if self.weighted:
+                    weight = self.weights.get((node, neighbor), float('inf'))
+                else:
+                    weight = 1
+                distances[node][neighbor] = weight
+                p[node][neighbor] = [neighbor]
+
+        for k in nodes:
+            for i in nodes:
+                for j in nodes:
+                    if distances[i][k] + distances[k][j] < distances[i][j]:
+                        distances[i][j] = distances[i][k] + distances[k][j]
+                        p[i][j] = p[i][k]
+                    elif distances[i][k] + distances[k][j] == distances[i][j]:
+                        p[i][j].extend(n for n in p[i][k] if n not in p[i][j])
+
+        return distances, p
+    
+
+    def path_lenth(self, target_length, distances, p):
+        all_paths = []
+
+        for u in self.adjacency_list:
+            for v in self.adjacency_list:
+                if u != v and distances[u][v] == target_length:
+                    paths = self.all_path_dist(p, distances, u, v, target_length)
+                    all_paths.extend(paths)
+
+        return all_paths
+
+
+    
+    def all_path_dist(self, p, distances, start, end, target_distance):
+        def backtrack(current_path, current_length):
+            last_node = current_path[-1]
+            if last_node == end and current_length == target_distance:
+                all_paths.append(list(current_path))
+                return
+            if current_length > target_distance:
+                return
+            for neighbor in self.adjacency_list[last_node]:
+                if neighbor not in current_path:  
+                    if current_length + self.weights.get((last_node, neighbor)) + distances[neighbor][end] == target_distance:
+                        current_path.append(neighbor)
+                        backtrack(current_path, current_length + self.weights.get((last_node, neighbor)))
+                        current_path.pop()
+
+        all_paths = []
+        backtrack([start], 0)
+        return all_paths
+
+
+    def task21(self, start, end):
+        distances, p = self.floyd()
+
+        if distances[start][end] == float('inf'):
+            print(f"Путь из {start} в {end} не существует.")
+            return [], float('inf')
+
+        shortest_length = distances[start][end]
+        print(f"Кратчайшая длина пути из {start} в {end}: {shortest_length}")
+
+        all_paths = self.all_path_dist(p, distances, start, end, shortest_length)
+
+        print("Кратчайшие пути из", start, "в", end, ":")
+        for path in all_paths:
+            print(" -> ".join(path))
+
+        all_paths_of_length = self.path_lenth(shortest_length, distances, p)
+
+        print("\nВсе пути в графе длиной", shortest_length, ":")
+        for path in all_paths_of_length:
+            print(" -> ".join(path))
+
+        return all_paths, shortest_length
+
+
+
 
     @singledispatchmethod
     def add_node(self, node: Node):
