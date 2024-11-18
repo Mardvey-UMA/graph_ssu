@@ -6,12 +6,10 @@ import copy
 
 graph_path = "P:\\graph\\graph_ssu\\graph_files"
 
-
 class Node:
     def __init__(self, name, value=None):
         self.name = name
         self.value = value
-
 
 class Graph:
     def __init__(self, directed=False, weighted=False):
