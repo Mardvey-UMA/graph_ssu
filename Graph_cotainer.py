@@ -1,3 +1,4 @@
+import heapq
 import json
 from collections import defaultdict, deque
 from functools import singledispatchmethod
@@ -181,12 +182,12 @@ class Graph:
     # Задача 39: Для каждой вершины найти кратчайшее
     # (по числу рёбер) расстояние от неё до ближайшей из заданного множества вершин.
     def find_shortest_distance(self, target_vertices):
-        distances = {} # словарь для хранения ответа
+        dist = {} # словарь для хранения ответа
         # Делаем обход в ширину от каждой вершины чтобы найти кратчайщие пути
         for start_vertex in self.adjacency_list.keys():
             if start_vertex in target_vertices: # если вершина совпала с множеством целевых
                 # значит расстояние до нее равно нулю
-                distances[start_vertex] = 0
+                dist[start_vertex] = 0
                 continue
 
             queue = deque([(start_vertex, 0)]) # помещаем в очередь текущую вершину
@@ -197,7 +198,7 @@ class Graph:
                 current_vertex, current_distance = queue.popleft() # достаем из очереди вершину и расстояние
 
                 if current_vertex in target_vertices: # если достигнута вершина которая нужна
-                    distances[start_vertex] = current_distance # пишем в словарь ответов
+                    dist[start_vertex] = current_distance # пишем в словарь ответов
                     found = True # нашли, больше не надо искать
                     break
 
@@ -207,9 +208,9 @@ class Graph:
                         queue.append((neighbor, current_distance + 1)) # помещаем в очередь с увеличемнием пути на + 1
 
             if not found: # если не удалось добраться до вершины => она не достижима
-                distances[start_vertex] = float('inf')
+                dist[start_vertex] = float('inf')
 
-        return distances
+        return dist
     
     # Задача на поиск минимального каркаса (остновного дерева) в неориентированном графе
     def find_minimal_spanning_tree_kruskal(self):
@@ -258,95 +259,85 @@ class Graph:
         print(f"Общий вес каркаса: {total_weight}")
 
         return mst_edges, total_weight
-    # Задача 21
-    def floyd(self):
-        if not(self.weighted):
-            raise TypeError("Нужен взвешенный граф")
-        nodes = list(self.adjacency_list.keys())
-        distances = {node: {other: float('inf') for other in nodes} for node in nodes}
-        p = {node: {other: [] for other in nodes} for node in nodes}
 
-        for node in nodes:
-            distances[node][node] = 0
-            for neighbor in self.adjacency_list[node]:
-                if self.weighted:
-                    weight = self.weights.get((node, neighbor), float('inf'))
-                else:
-                    weight = 1
-                distances[node][neighbor] = weight
-                p[node][neighbor] = [neighbor]
+    def task21(self, start, target):
+        if not self.weighted:
+            raise TypeError("Граф должен быть взвешенным")
 
-        for k in nodes:
-            for i in nodes:
-                for j in nodes:
-                    if distances[i][k] + distances[k][j] < distances[i][j]:
-                        distances[i][j] = distances[i][k] + distances[k][j]
-                        p[i][j] = p[i][k]
-                    elif distances[i][k] + distances[k][j] == distances[i][j]:
-                        p[i][j].extend(n for n in p[i][k] if n not in p[i][j])
+        def dijkstra(source):
+            dist = {node: float('inf') for node in self.adjacency_list}
+            p = {node: [] for node in self.adjacency_list}
+            dist[source] = 0
+            pq = [(0, source)] 
 
-        return distances, p
-    
+            while pq:
+                current_distance, current_node = heapq.heappop(pq)
 
-    def path_lenth(self, target_length, distances, p):
-        all_paths = []
+                if current_distance > dist[current_node]:
+                    continue
 
-        for u in self.adjacency_list:
-            for v in self.adjacency_list:
-                if u != v and distances[u][v] == target_length:
-                    paths = self.all_path_dist(p, distances, u, v, target_length)
-                    all_paths.extend(paths)
+                for neighbor in self.adjacency_list[current_node]:
+                    edge_weight = self.weights[(current_node, neighbor)]
+                    new_distance = current_distance + edge_weight
 
-        return all_paths
+                    if new_distance < dist[neighbor]:
+                        dist[neighbor] = new_distance
+                        p[neighbor] = [current_node]
+                        heapq.heappush(pq, (new_distance, neighbor))
+                    elif new_distance == dist[neighbor]:
+                        p[neighbor].append(current_node)
 
+            return dist, p
 
-    
-    def all_path_dist(self, p, distances, start, end, target_distance):
-        def backtrack(current_path, current_length):
-            last_node = current_path[-1]
-            if last_node == end and current_length == target_distance:
-                all_paths.append(list(current_path))
+        dist, p = dijkstra(start)
+
+        if dist[target] == float('inf'):
+            print(f"Нет пути из {start} в {target}")
+            return [], dist
+
+        shortest_distance = dist[target]
+
+        def find_paths(end, path):
+            if not p[end]:
+                paths.append(path[::-1])
                 return
-            if current_length > target_distance:
-                return
-            for neighbor in self.adjacency_list[last_node]:
-                if neighbor not in current_path:  
-                    if current_length + self.weights.get((last_node, neighbor)) + distances[neighbor][end] == target_distance:
-                        current_path.append(neighbor)
-                        backtrack(current_path, current_length + self.weights.get((last_node, neighbor)))
-                        current_path.pop()
+            for prev in p[end]:
+                find_paths(prev, path + [end])
 
-        all_paths = []
-        backtrack([start], 0)
-        return all_paths
+        paths = []
+        find_paths(target, [])
 
+        print(f"Кратчайшее расстояние из {start} в {target}: {shortest_distance}")
 
-    def task21(self, start, end):
-        distances, p = self.floyd()
+        
+        fp = [' -> '.join(path) for path in paths]
+        print(f"Кратчайший путь: {start} -> {' '.join(fp)}")
 
-        if distances[start][end] == float('inf'):
-            print(f"Путь из {start} в {end} не существует.")
-            return [], float('inf')
+        def find_all_paths_of_length(length):
+            result_paths = []
 
-        shortest_length = distances[start][end]
-        print(f"Кратчайшая длина пути из {start} в {end}: {shortest_length}")
+            def dfs(node, current_path, current_length):
+                if current_length == length:
+                    result_paths.append(current_path[:])
+                    return
+                if current_length > length:
+                    return
 
-        all_paths = self.all_path_dist(p, distances, start, end, shortest_length)
+                for neighbor in self.adjacency_list[node]:
+                    edge_weight = self.weights[(node, neighbor)]
+                    if neighbor not in current_path:
+                        dfs(neighbor, current_path + [neighbor], current_length + edge_weight)
 
-        print("Кратчайшие пути из", start, "в", end, ":")
-        for path in all_paths:
-            print(" -> ".join(path))
+            for node in self.adjacency_list:
+                dfs(node, [node], 0)
 
-        all_paths_of_length = self.path_lenth(shortest_length, distances, p)
+            return result_paths
 
-        print("\nВсе пути в графе длиной", shortest_length, ":")
-        for path in all_paths_of_length:
-            print(" -> ".join(path))
+        all_paths = find_all_paths_of_length(shortest_distance)
+        fpa = [' -> '.join(path) for path in all_paths]
+        print(f"Все пути длиной {shortest_distance}: {', '.join(fpa)}")
 
-        return all_paths, shortest_length
-
-
-
+        return paths, all_paths
 
     @singledispatchmethod
     def add_node(self, node: Node):
