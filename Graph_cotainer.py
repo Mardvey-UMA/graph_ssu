@@ -549,6 +549,66 @@ class Graph:
             #print(temp_graph)
         return paths
     
+    def reverse_graph(self):
+        reversed_graph = Graph(directed=True, weighted=self.weighted)
+        for u in self.adjacency_list:
+            for v in self.adjacency_list[u]:
+                weight = self.weights[(u, v)] if self.weighted else 1
+                reversed_graph.add_connect(v, u, weight)
+        return reversed_graph
+    
+    def bellman_ford(self, start):
+        dist = {node: float('inf') for node in self.adjacency_list}
+        dist[start] = 0
+        prev = {node: None for node in self.adjacency_list}
+
+        for _ in range(len(self.adjacency_list) - 1):
+            for u in self.adjacency_list:
+                for v in self.adjacency_list[u]:
+                    weight = self.weights[(u, v)] if self.weighted else 1
+                    if dist[u] + weight < dist[v]:
+                        dist[v] = dist[u] + weight
+                        prev[v] = u
+
+        for u in self.adjacency_list:
+            for v in self.adjacency_list[u]:
+                weight = self.weights[(u, v)] if self.weighted else 1
+                if dist[u] + weight < dist[v]:
+                    raise ValueError("Граф содержит отрицательные циклы")
+
+        return dist, prev
+
+    def extract_path_bf(self, start, end, prev):
+        path = []
+        current = end
+        
+        while current is not None:
+            path.append(current)
+            current = prev[current]
+        
+        path.reverse()
+        return path if path[0] == start else None
+
+    def find_shortest_paths_to_node(self, u):
+        if self.directed:
+            reversed_graph = self.reverse_graph()
+        else:
+            reversed_graph = self.copy()
+
+        try:
+            dist, prev = reversed_graph.bellman_ford(u)
+            print(reversed_graph)
+            print(prev)
+            paths = {}
+            for node in self.adjacency_list:
+                path = self.extract_path_bf(u, node , prev)
+                paths[node] = path
+
+            return dist, paths
+        except ValueError as e:
+            print(e)
+            return None
+        
     # Удаление ребра/дуги по имени
     def del_connect(self, name1: str, name2: str):
         if name1 in self.adjacency_list and name2 in self.adjacency_list:
