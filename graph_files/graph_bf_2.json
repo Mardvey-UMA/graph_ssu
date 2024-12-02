@@ -1,0 +1,20 @@
+{
+    "type": ["weighted"],
+    "nodes": [
+        {"name": "A", "value": null},
+        {"name": "B", "value": null},
+        {"name": "C", "value": null},
+        {"name": "D", "value": null},
+        {"name": "E", "value": null},
+        {"name": "F", "value": null},
+        {"name": "G", "value": null}
+    ],
+    "edges": [
+        {"from": "A", "to": "B", "weight": 5},
+        {"from": "B", "to": "C", "weight": -2},
+        {"from": "C", "to": "D", "weight": 3},
+        {"from": "D", "to": "E", "weight": 1},
+        {"from": "E", "to": "C", "weight": -4}
+    ]
+}
+

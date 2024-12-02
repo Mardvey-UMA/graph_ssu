@@ -1,0 +1,25 @@
+{
+  "type": ["weighted"],
+  "nodes": [
+    { "name": "A", "value": null },
+    { "name": "B", "value": null },
+    { "name": "C", "value": null },
+    { "name": "D", "value": null },
+    { "name": "E", "value": null },
+    { "name": "F", "value": null },
+    { "name": "G", "value": null }
+  ],
+  "edges": [
+    { "from": "A", "to": "B", "weight": 5 },
+    { "from": "A", "to": "C", "weight": 3 },
+    { "from": "B", "to": "C", "weight": 1 },
+    { "from": "B", "to": "D", "weight": 4 },
+    { "from": "C", "to": "D", "weight": 2 },
+    { "from": "C", "to": "E", "weight": 7 },
+    { "from": "D", "to": "E", "weight": 3 },
+    { "from": "D", "to": "F", "weight": 6 },
+    { "from": "E", "to": "F", "weight": 2 },
+    { "from": "F", "to": "G", "weight": 8 },
+    { "from": "G", "to": "A", "weight": 5 }
+  ]
+}
