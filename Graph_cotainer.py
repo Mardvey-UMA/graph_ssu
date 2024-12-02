@@ -481,7 +481,74 @@ class Graph:
                     self.weights.pop(t)
         else:
             print(f'Узел {name} не найден')
+    def floyd_warshall(self):
+        dist = {node: {other: float('inf') for other in self.adjacency_list} for node in self.adjacency_list}
+        pred = {node: {other: None for other in self.adjacency_list} for node in self.adjacency_list}
 
+        for node in self.adjacency_list:
+            dist[node][node] = 0
+        for (u, v), weight in self.weights.items():
+            dist[u][v] = weight
+            pred[u][v] = u
+            if not self.directed:
+                dist[v][u] = weight
+                pred[v][u] = v
+
+        for k in self.adjacency_list:
+            for i in self.adjacency_list:
+                for j in self.adjacency_list:
+                    if dist[i][j] > dist[i][k] + dist[k][j]:
+                        dist[i][j] = dist[i][k] + dist[k][j]
+                        pred[i][j] = pred[k][j]
+
+        return dist, pred
+
+    def extract_path(self, start, end, pred):
+        path = []
+        while end is not None:
+            path.append(end)
+            end = pred[start][end]
+        path.reverse()
+        return path
+
+    def find_k_shortest_paths(self, u, v, k):
+        paths = []
+        current_graph = self.copy()
+
+        dist, pred = current_graph.floyd_warshall()
+        if dist[u][v] == float('inf'):
+            return [] 
+        path_lenthsg = dist[u][v]
+        path = self.extract_path(u, v, pred)
+        paths.append(path)
+
+        temp_graph = current_graph.copy()
+        last_edge = (path[-2], path[-1])
+        temp_graph.del_connect(path[-1], path[-2])
+        temp_graph.weights.pop(last_edge)
+        temp_graph.weights.pop((path[-1], path[-2]))
+        #print(temp_graph)
+        for _ in range(k - 1):
+            dist, pred = temp_graph.floyd_warshall()
+
+            if dist[u][v] == float('inf'):
+                break 
+
+            new_path = self.extract_path(u, v, pred)
+
+            if dist[u][v] > path_lenthsg:
+                break 
+
+            paths.append(new_path)
+            path = new_path
+            #temp_graph = temp_graph.copy()
+            last_edge = (path[-2], path[-1])
+            temp_graph.del_connect(path[-1], path[-2])
+            temp_graph.weights.pop(last_edge)
+            temp_graph.weights.pop((path[-1], path[-2]))
+            #print(temp_graph)
+        return paths
+    
     # Удаление ребра/дуги по имени
     def del_connect(self, name1: str, name2: str):
         if name1 in self.adjacency_list and name2 in self.adjacency_list:
@@ -579,7 +646,7 @@ class Graph:
             graph.add_connect(first_node, second_node, weight)
 
         return graph
-
+    
     # консольное меню отдельно
     def console_menu(self):
         while True:
